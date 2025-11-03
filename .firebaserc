@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "khenzhopips-ea-ai",
+    "default": "khenzhopips-ea",
     "khenzhopips-ea": "khenzhopips-ea"
   },
   "targets": {},

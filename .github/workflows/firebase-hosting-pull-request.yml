@@ -17,5 +17,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KHENZHOPIPS_EA_AI }}
-          projectId: khenzhopips-ea-ai
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KHENZHOPIPS_EA }}
+          projectId: khenzhopips-ea
