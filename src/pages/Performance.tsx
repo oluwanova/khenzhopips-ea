@@ -27,7 +27,7 @@ const Performance = () => {
       bestInstrument: "Multiple Majors"
     },
     {
-      system: "Sentience v3.0",
+      system: "Sentinel v3.0",
       focus: "AI Volatility",
       pnl: "+73.9%",
       maxDD: "18.5%",
@@ -44,7 +44,10 @@ const Performance = () => {
       accounts: [
         { id: "Account #1", login: "123456", password: "investor1" },
         { id: "Account #2", login: "123457", password: "investor2" },
-        { id: "Account #3", login: "123458", password: "investor3" }
+        { id: "Account #3", login: "123458", password: "investor3" },
+        { id: "Account #4", login: "123459", password: "investor4" },
+        { id: "Account #5", login: "123460", password: "investor5" },
+        { id: "Account #6", login: "123461", password: "investor6" }
       ]
     },
     {
@@ -52,15 +55,21 @@ const Performance = () => {
       accounts: [
         { id: "Account #7", login: "223456", password: "investor7" },
         { id: "Account #8", login: "223457", password: "investor8" },
-        { id: "Account #9", login: "223458", password: "investor9" }
+        { id: "Account #9", login: "223458", password: "investor9" },
+        { id: "Account #10", login: "223459", password: "investor10" },
+        { id: "Account #11", login: "223460", password: "investor11" },
+        { id: "Account #12", login: "223461", password: "investor12" }
       ]
     },
     {
-      name: "Sentience EA",
+      name: "Sentinel EA",
       accounts: [
         { id: "Account #13", login: "323456", password: "investor13" },
         { id: "Account #14", login: "323457", password: "investor14" },
-        { id: "Account #15", login: "323458", password: "investor15" }
+        { id: "Account #15", login: "323458", password: "investor15" },
+        { id: "Account #16", login: "323459", password: "investor16" },
+        { id: "Account #17", login: "323460", password: "investor17" },
+        { id: "Account #18", login: "323461", password: "investor18" }
       ]
     }
   ];
@@ -73,7 +82,7 @@ const Performance = () => {
         {/* Header */}
         <section className="py-16 px-4 gradient-hero">
           <div className="container mx-auto max-w-6xl text-center">
-            <h1 className="mb-6">Verified Performance: Our Commitment to Absolute Transparency</h1>
+            <h1 className="mb-6 text-amber-500 text-4xl md:text-5xl">Verified Performance: Our Commitment to Absolute Transparency</h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
               Live, audited, and independently verified trading results across all KhenzhoPips systems. 
               No marketing gimmicks, just raw data.
@@ -85,7 +94,7 @@ const Performance = () => {
         <section className="py-16 px-4 bg-background">
           <div className="container mx-auto max-w-4xl">
             <Card className="p-8 gradient-card border-primary/20">
-              <h2 className="mb-4">Our Performance Philosophy</h2>
+              <h2 className="mb-4 text-emerald-500 text-3xl md:text-4xl">Our Performance Philosophy</h2>
               <p className="text-muted-foreground text-lg">
                 In an industry where backtested fantasies are sold as reality, we commit to radical transparency. 
                 Every statistic here is from live forward-testing accounts, independently tracked by third-party services, 
@@ -98,7 +107,7 @@ const Performance = () => {
         {/* Comparative Performance */}
         <section className="py-16 px-4">
           <div className="container mx-auto max-w-6xl">
-            <h2 className="text-center mb-12">Comparative System Performance</h2>
+            <h2 className="text-center mb-12 text-emerald-500 text-3xl md:text-4xl">Comparative System Performance</h2>
             <div className="overflow-x-auto">
               <Card className="p-6 gradient-card">
                 <table className="w-full">
@@ -119,7 +128,7 @@ const Performance = () => {
                       <tr key={idx} className="border-b border-border/50 hover:bg-background/50 transition-smooth">
                         <td className="py-4 px-4 font-semibold">{system.system}</td>
                         <td className="py-4 px-4 text-muted-foreground">{system.focus}</td>
-                        <td className="py-4 px-4 text-success font-semibold">{system.pnl}</td>
+                        <td className="py-4 px-4 text-emerald-500 font-semibold">{system.pnl}</td>
                         <td className="py-4 px-4">{system.maxDD}</td>
                         <td className="py-4 px-4">{system.profitFactor}</td>
                         <td className="py-4 px-4">{system.winRate}</td>
@@ -138,7 +147,7 @@ const Performance = () => {
         <section className="py-16 px-4 bg-background">
           <div className="container mx-auto max-w-6xl">
             <div className="text-center mb-12">
-              <h2 className="mb-4">Live Investor Access</h2>
+              <h2 className="mb-4 text-emerald-500 text-3xl md:text-4xl">Live Investor Access</h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Monitor our EAs in real-time using the investor passwords for our live MetaTrader 5 accounts.
               </p>
@@ -147,43 +156,47 @@ const Performance = () => {
             <div className="space-y-8">
               {liveAccounts.map((ea, idx) => (
                 <Card key={idx} className="p-8 gradient-card border-primary/20">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl">{ea.name}</h3>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        MyFXBook
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        FXBlue
-                      </Button>
+                  <div className="lg:flex lg:gap-8">
+                    <div className="flex-shrink-0 lg:w-1/3 mb-8 lg:mb-0">
+                      <h3 className="text-2xl mb-2 text-foreground">{ea.name}</h3>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          MyFXBook
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          FXBlue
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {ea.accounts.map((account, accountIdx) => (
-                      <Card key={accountIdx} className="p-4 bg-background/50">
-                        <div className="font-semibold mb-3">{account.id}</div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Login:</span>
-                            <code className="font-mono text-primary">{account.login}</code>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Password:</span>
-                            <code className="font-mono text-primary">{account.password}</code>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                    
+                    <div className="flex-grow">
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {ea.accounts.map((account, accountIdx) => (
+                          <Card key={accountIdx} className="p-4 bg-background/50">
+                            <div className="font-semibold mb-3">{account.id}</div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Login:</span>
+                                <code className="font-mono text-primary truncate">{account.login}</code>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Password:</span>
+                                <code className="font-mono text-primary">{account.password}</code>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </Card>
               ))}
 
               {/* Guardian Coming Soon */}
-              <Card className="p-8 gradient-card border-primary/20 opacity-50">
-                <h3 className="text-2xl mb-4">Tactical Guardian</h3>
+              <Card className="p-8 gradient-card border-primary/20 opacity-50 flex flex-col items-center justify-center">
+                <h3 className="text-2xl mb-4 text-foreground">Tactical Guardian</h3>
                 <p className="text-muted-foreground text-center">Coming Soon...</p>
               </Card>
             </div>

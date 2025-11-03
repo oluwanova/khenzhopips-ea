@@ -1,15 +1,16 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
 import { TrendingUp, Zap, Brain, Shield } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Products = () => {
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const products = [
     {
       id: "scout",
-      icon: <TrendingUp className="w-12 h-12 text-primary" />,
+      icon: <TrendingUp className="w-12 h-12 text-amber-500" />,
       name: "Scout EA v1.0",
       tagline: "The Range Pilot",
       subtitle: "Master of consolidation zones and low-volatility environments. Calm, patient, and surgically precise.",
@@ -27,14 +28,13 @@ const Products = () => {
         recoveryFactor: "3.12"
       },
       pricing: [
-        { type: "Lifetime License", price: "$497", description: "Permanent access, all future v1.x updates, priority support" },
-        { type: "Monthly Subscription", price: "$97/mo", description: "Full system access, cancel anytime, standard support" },
-        { type: "Education Bundle", price: "$647", description: "Lifetime license + comprehensive course on range trading" }
+        { type: "Lifetime", price: "$497", description: "Permanent access & all v1.x updates." },
+        { type: "Monthly", price: "$97/mo", description: "Full access, cancel anytime." }
       ]
     },
     {
       id: "navigator",
-      icon: <Zap className="w-12 h-12 text-primary" />,
+      icon: <Zap className="w-12 h-12 text-emerald-500" />,
       name: "Navigator EA v2.0",
       tagline: "The Adaptive Hybrid",
       subtitle: "Intelligent market state detection with dynamic strategy switching. Thrives in both trends and ranges.",
@@ -52,35 +52,50 @@ const Products = () => {
         recoveryFactor: "4.21"
       },
       pricing: [
-        { type: "Lifetime License", price: "$697", description: "Permanent access, all future v2.x updates, priority support" },
-        { type: "Monthly Subscription", price: "$127/mo", description: "Full system access, cancel anytime, standard support" }
+        { type: "Lifetime", price: "$697", description: "Permanent access & all v2.x updates." },
+        { type: "Monthly", price: "$127/mo", description: "Full access, cancel anytime." }
       ]
     },
     {
-      id: "sentience",
-      icon: <Brain className="w-12 h-12 text-primary" />,
-      name: "Sentience EA v3.0",
+      id: "sentinel",
+      icon: <Brain className="w-12 h-12 text-amber-500" />,
+      name: "Sentinel EA v3.0",
       tagline: "The Neural Executor",
       subtitle: "AI-powered execution for high-volatility assets like Gold and Indices. Manages chaos with intelligent precision.",
       features: [
         "Machine Learning Core: Trained on thousands of hours of market data",
         "Dynamic Risk Adjustment: AI model adjusts risk parameters in real-time",
         "Optimized for Volatility: Specifically engineered for chaotic price action",
-        "Self-Optimizing Parameters: Can periodically re-calibrate its own settings",
-        "Neural Pattern Recognition: Identifies complex market structures"
+        "Self-Optimizing Parameters: Periodically re-calibrates its own settings",
+        "Neural Pattern Recognition: Identifies complex market structures",
       ],
       performance: {
         profitFactor: "2.45",
         maxDrawdown: "18.5%",
         sharpeRatio: "1.92",
-        recoveryFactor: "5.33"
+        recoveryFactor: "5.33",
       },
       pricing: [
-        { type: "Lifetime License", price: "$997", description: "Permanent access, all future v3.x updates, priority support" },
-        { type: "Monthly Subscription", price: "$197/mo", description: "Full system access, cancel anytime, standard support" }
-      ]
-    }
+        { type: "Lifetime", price: "$997", description: "Permanent access & all v3.x updates." },
+        { type: "Monthly", price: "$197/mo", description: "Full access, cancel anytime." },
+      ],
+    },
+    {
+      id: "guardian",
+      icon: <Shield className="w-12 h-12 text-emerald-500" />,
+      name: "Tactical Guardian v4.0",
+      tagline: "The Hedging Specialist",
+      subtitle: "Advanced correlation trading and high-frequency execution for ultimate portfolio protection. For professional and institutional traders.",
+      features: [],
+      performance: {},
+      pricing: [],
+      comingSoon: true,
+    },
   ];
+
+  const handleToggleExpand = (productId: string) => {
+    setExpandedCard(prev => (prev === productId ? null : productId));
+  };
 
   return (
     <div className="min-h-screen">
@@ -90,7 +105,7 @@ const Products = () => {
         {/* Header */}
         <section className="py-16 px-4 gradient-hero">
           <div className="container mx-auto max-w-6xl text-center">
-            <h1 className="mb-6">The KhenzhoPips EA Collection</h1>
+            <h1 className="mb-6 text-amber-500 text-4xl md:text-5xl">The KhenzhoPips EA Collection</h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
               Each version of the KhenzhoPips EA represents a generation of evolution—from precision range trading 
               to adaptive AI logic. These systems are designed to be powerful, flexible tools for traders of all levels.
@@ -103,21 +118,21 @@ const Products = () => {
           <div className="container mx-auto max-w-6xl">
             <div className="grid md:grid-cols-3 gap-6 mb-16">
               <Card className="p-6 gradient-card">
-                <h3 className="text-xl mb-3">For the Beginner</h3>
+                <h3 className="text-xl mb-3 text-foreground">For the Beginner</h3>
                 <p className="text-muted-foreground">
                   Our EAs offer a 'plug-and-play' experience. With our clear guides and preset files, 
                   you can get started on a demo account in minutes.
                 </p>
               </Card>
               <Card className="p-6 gradient-card">
-                <h3 className="text-xl mb-3">For the Intermediate Trader</h3>
+                <h3 className="text-xl mb-3 text-foreground">For the Intermediate Trader</h3>
                 <p className="text-muted-foreground">
                   Use the EAs as your tireless assistant. Let them scan the markets, manage entries, 
                   and handle exits based on your strategic direction.
                 </p>
               </Card>
               <Card className="p-6 gradient-card">
-                <h3 className="text-xl mb-3">For the Professional Trader</h3>
+                <h3 className="text-xl mb-3 text-foreground">For the Professional Trader</h3>
                 <p className="text-muted-foreground">
                   Integrate our EAs into your workflow to manage trades with flawless precision and 
                   execute complex risk management protocols 24/7.
@@ -126,102 +141,75 @@ const Products = () => {
             </div>
 
             {/* Products */}
-            <div className="space-y-16">
-              {products.map((product) => (
-                <Card key={product.id} id={product.id} className="p-8 md:p-12 gradient-card border-primary/20">
-                  <div className="flex flex-col md:flex-row gap-8">
-                    {/* Icon */}
-                    <div className="flex-shrink-0">
-                      <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
+            <div className="grid md:grid-cols-2 gap-8">
+              {products.map((product) => {
+                const isExpanded = expandedCard === product.id;
+                return (
+                <Card key={product.id} id={product.id} className={`p-8 md:p-12 gradient-card border-primary/20 flex flex-col transition-all duration-300 ${product.comingSoon ? 'opacity-75' : ''}`}>
+                  <div className="flex-grow">
+                    <div className="flex flex-col md:flex-row gap-8">
+                      {/* Icon */}
+                      <div className="flex-shrink-0">
                         {product.icon}
                       </div>
-                    </div>
 
-                    {/* Content */}
-                    <div className="flex-1">
-                      <h2 className="mb-2">{product.name}</h2>
-                      <p className="text-primary font-semibold text-xl mb-4">{product.tagline}</p>
-                      <p className="text-muted-foreground text-lg mb-8">{product.subtitle}</p>
+                      {/* Content */}
+                      <div className="flex-1">
+                        {product.comingSoon && (
+                          <div className="inline-block bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-semibold mb-4">
+                            Coming Soon
+                          </div>
+                        )}
+                        <h2 className="mb-1 text-xl text-emerald-500">{product.name}</h2>
+                        <p className="text-primary font-semibold text-lg mb-4">{product.tagline}</p>
+                        <p className="text-muted-foreground text-lg mb-8">{product.subtitle}</p>
 
-                      {/* Features */}
-                      <div className="mb-8">
-                        <h3 className="text-xl mb-4">Core Features</h3>
-                        <ul className="space-y-2">
-                          {product.features.map((feature, idx) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <span className="text-primary mt-1">✓</span>
-                              <span className="text-muted-foreground">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                        {!product.comingSoon && isExpanded && (
+                          <>
+                            {/* Features */}
+                            <div className="mb-8">
+                              <h3 className="text-lg mb-3 text-foreground">Core Features</h3>
+                              <ul className="space-y-2">
+                                {product.features.map((feature, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <span className="text-primary mt-1">✓</span>
+                                    <span className="text-muted-foreground text-sm">{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
 
-                      {/* Performance */}
-                      <div className="mb-8">
-                        <h3 className="text-xl mb-4">Performance Snapshot</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="bg-background/50 p-4 rounded-lg">
-                            <div className="text-2xl font-bold text-primary">{product.performance.profitFactor}</div>
-                            <div className="text-sm text-muted-foreground">Profit Factor</div>
-                          </div>
-                          <div className="bg-background/50 p-4 rounded-lg">
-                            <div className="text-2xl font-bold text-primary">{product.performance.maxDrawdown}</div>
-                            <div className="text-sm text-muted-foreground">Max Drawdown</div>
-                          </div>
-                          <div className="bg-background/50 p-4 rounded-lg">
-                            <div className="text-2xl font-bold text-primary">{product.performance.sharpeRatio}</div>
-                            <div className="text-sm text-muted-foreground">Sharpe Ratio</div>
-                          </div>
-                          <div className="bg-background/50 p-4 rounded-lg">
-                            <div className="text-2xl font-bold text-primary">{product.performance.recoveryFactor}</div>
-                            <div className="text-sm text-muted-foreground">Recovery Factor</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Pricing */}
-                      <div>
-                        <h3 className="text-xl mb-4">Pricing Options</h3>
-                        <div className="grid md:grid-cols-3 gap-4">
-                          {product.pricing.map((option, idx) => (
-                            <Card key={idx} className="p-6 bg-background/50 border-primary/10 hover:border-primary/30 transition-smooth">
-                              <div className="text-sm text-muted-foreground mb-2">{option.type}</div>
-                              <div className="text-3xl font-bold text-primary mb-3">{option.price}</div>
-                              <p className="text-sm text-muted-foreground mb-4">{option.description}</p>
-                              <Button className="w-full gradient-primary">Select Plan</Button>
-                            </Card>
-                          ))}
-                        </div>
+                            {/* Pricing */}
+                            <div className="mb-8">
+                              <h3 className="text-lg mb-3 text-foreground">Pricing Options</h3>
+                              <div className="grid sm:grid-cols-2 gap-4">
+                                {product.pricing.map((option, idx) => (
+                                  <Card key={idx} className="p-4 bg-background/50 border-primary/10 hover:border-amber-500/30 transition-smooth">
+                                    <div className="text-xs text-muted-foreground mb-1 font-semibold">{option.type}</div>
+                                    <div className="text-xl font-bold text-amber-500 mb-2">{option.price}</div>
+                                    <p className="text-xs text-muted-foreground mb-3">{option.description}</p>
+                                    <Button size="sm" className="w-full gradient-primary">Select Plan</Button>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
-                </Card>
-              ))}
-
-              {/* Guardian Coming Soon */}
-              <Card className="p-8 md:p-12 gradient-card border-primary/20 opacity-75">
-                <div className="flex flex-col md:flex-row gap-8">
-                  <div className="flex-shrink-0">
-                    <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
-                      <Shield className="w-12 h-12 text-foreground" />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="inline-block bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-semibold mb-4">
-                      Coming Soon
-                    </div>
-                    <h2 className="mb-2">Tactical Guardian v4.0</h2>
-                    <p className="text-primary font-semibold text-xl mb-4">The Hedging Specialist</p>
-                    <p className="text-muted-foreground text-lg mb-8">
-                      Advanced correlation trading and high-frequency execution for ultimate portfolio protection. 
-                      This system is in its final stages of forward-testing and is designed for professional and institutional traders.
-                    </p>
-                    <Button variant="outline" size="lg" disabled>
+                  {product.comingSoon ? (
+                    <Button variant="outline" size="lg" disabled className="mt-auto">
                       Join The Early Access Waitlist
                     </Button>
-                  </div>
-                </div>
-              </Card>
+                  ) : (
+                    <Button onClick={() => handleToggleExpand(product.id)} variant="outline" className="mt-auto">
+                      {isExpanded ? "Show Less" : "View Details & Pricing"}
+                    </Button>
+                  )}
+                </Card>
+                )
+              })}
             </div>
           </div>
         </section>

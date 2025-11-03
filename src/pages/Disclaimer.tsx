@@ -14,7 +14,7 @@ const Disclaimer = () => {
           <div className="container mx-auto max-w-4xl text-center">
             <div className="flex items-center justify-center gap-4 mb-6">
               <AlertTriangle className="w-12 h-12 text-primary" />
-              <h1>Risk Disclaimer & Terms of Use</h1>
+              <h1 className="text-amber-500 text-4xl md:text-5xl">Risk Disclaimer & Terms of Use</h1>
             </div>
             <p className="text-xl text-muted-foreground">
               Please read this document carefully before using our products or services.
@@ -26,7 +26,7 @@ const Disclaimer = () => {
           <div className="container mx-auto max-w-4xl space-y-8">
             {/* High-Risk Investment Notice */}
             <Card className="p-8 gradient-card border-destructive/50">
-              <h2 className="text-2xl mb-4 text-destructive">High-Risk Investment Notice</h2>
+              <h2 className="text-3xl md:text-4xl mb-4 text-destructive">High-Risk Investment Notice</h2>
               <p className="text-muted-foreground mb-4">
                 Trading foreign exchange, contracts for difference (CFDs), cryptocurrencies, and other leveraged financial 
                 instruments carries an <strong className="text-foreground">extremely high level of risk</strong> and may not be suitable for all investors.
@@ -43,7 +43,7 @@ const Disclaimer = () => {
 
             {/* System-Specific Limitations */}
             <Card className="p-8 gradient-card border-primary/20">
-              <h2 className="text-2xl mb-4">System-Specific Limitations & Weaknesses</h2>
+              <h2 className="text-3xl md:text-4xl mb-4 text-emerald-500">System-Specific Limitations & Weaknesses</h2>
               <p className="text-muted-foreground mb-6">
                 KhenzhoPips EAs are trading tools, not investment advice. Past performance, whether actual or indicated by 
                 historical tests, is not a guarantee of future results. All trading systems, including ours, have inherent 
@@ -52,21 +52,21 @@ const Disclaimer = () => {
               
               <div className="space-y-4">
                 <div className="bg-background/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2 text-primary">Scout EA (Range Trading)</h3>
+                  <h3 className="font-semibold mb-2 text-foreground">Scout EA (Range Trading)</h3>
                   <p className="text-sm text-muted-foreground">
                     Optimized for ranging markets. May underperform during strong trending moves. Requires proper range identification.
                   </p>
                 </div>
                 
                 <div className="bg-background/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2 text-primary">Navigator EA (Hybrid)</h3>
+                  <h3 className="font-semibold mb-2 text-foreground">Navigator EA (Hybrid)</h3>
                   <p className="text-sm text-muted-foreground">
                     Cannot predict market state changes with 100% accuracy. May experience whipsaws during transition periods.
                   </p>
                 </div>
                 
                 <div className="bg-background/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2 text-primary">Sentience EA (AI Volatility)</h3>
+                  <h3 className="font-semibold mb-2 text-foreground">Sentinel EA (AI Volatility)</h3>
                   <p className="text-sm text-muted-foreground">
                     Susceptible to "black swan" events and market conditions outside its training data. Requires higher risk tolerance.
                   </p>
@@ -76,7 +76,7 @@ const Disclaimer = () => {
 
             {/* User Responsibility */}
             <Card className="p-8 gradient-card border-primary/20">
-              <h2 className="text-2xl mb-4">User Responsibility & Understanding</h2>
+              <h2 className="text-3xl md:text-4xl mb-4 text-emerald-500">User Responsibility & Understanding</h2>
               <p className="text-muted-foreground mb-6">
                 It is your <strong className="text-foreground">absolute responsibility</strong> to understand how each EA works 
                 before deploying it on a live account.
@@ -118,7 +118,7 @@ const Disclaimer = () => {
 
             {/* Final Disclaimer */}
             <Card className="p-8 gradient-card border-destructive/50">
-              <h2 className="text-2xl mb-4 text-destructive">Final Disclaimer</h2>
+              <h2 className="text-3xl md:text-4xl mb-4 text-destructive">Final Disclaimer</h2>
               <p className="text-muted-foreground mb-4">
                 By using our software, you acknowledge and agree that you are <strong className="text-foreground">solely responsible</strong> for 
                 all trading decisions and their outcomes.

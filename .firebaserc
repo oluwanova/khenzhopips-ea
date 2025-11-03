@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "khenzhopips-ea-ai",
+    "khenzhopips-ea": "khenzhopips-ea"
+  },
+  "targets": {},
+  "etags": {}
+}

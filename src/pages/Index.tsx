@@ -42,21 +42,21 @@ const Index = () => {
       tagline: "The Adaptive Hybrid",
       description: "Intelligent market state detection with dynamic strategy switching. Thrives in both trends and ranges.",
       bestFor: "Intermediate traders, all-market conditions, balanced growth",
-      gradient: "from-cyan-500/20 to-teal-500/20"
+      gradient: "from-emerald-500/20 to-green-500/20"
     },
     {
       name: "Sentience EA v3.0",
       tagline: "The Neural Executor",
       description: "AI-powered execution for high-volatility assets like Gold and Indices. Manages chaos with intelligent precision.",
       bestFor: "Experienced traders, aggressive growth, volatile instruments",
-      gradient: "from-teal-500/20 to-emerald-500/20"
+      gradient: "from-amber-500/20 to-yellow-500/20"
     },
     {
       name: "Tactical Guardian v4.0",
       tagline: "The Hedging Specialist (Coming Soon)",
       description: "Advanced correlation trading and high-frequency execution for ultimate portfolio protection.",
       bestFor: "Professional traders, portfolio managers, advanced hedging",
-      gradient: "from-emerald-500/20 to-green-500/20",
+      gradient: "from-emerald-500/20 to-lime-500/20",
       comingSoon: true
     }
   ];
@@ -68,11 +68,8 @@ const Index = () => {
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 gradient-hero">
         <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="mb-6">
+          <h1 className="mb-6 text-amber-500 text-4xl md:text-5xl">
             KhenzhoPips Automated Trading Systems:<br />
-            <span className="gradient-primary bg-clip-text text-transparent">
-              Where Precision Meets Performance
-            </span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
             Advanced algorithmic solutions engineered for disciplined traders seeking a statistical edge. 
@@ -103,7 +100,7 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-center mb-4">Why KhenzhoPips is Different</h2>
+          <h2 className="text-center mb-4 text-emerald-500 text-3xl md:text-4xl">Why KhenzhoPips is Different</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
             Built on a foundation of transparency, statistical rigor, and real-world battle testing
           </p>
@@ -112,7 +109,7 @@ const Index = () => {
             {features.map((feature, index) => (
               <Card key={index} className="p-6 gradient-card border-primary/10 hover:border-primary/30 transition-smooth shadow-card">
                 <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl mb-3">{feature.title}</h3>
+                <h3 className="text-xl mb-3 text-foreground">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
               </Card>
             ))}
@@ -123,20 +120,20 @@ const Index = () => {
       {/* EA Showcase */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-center mb-4">The EA Collection Showcase</h2>
+          <h2 className="text-center mb-4 text-emerald-500 text-3xl md:text-4xl">The EA Collection Showcase</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
             Four generations of evolution, each designed for specific market conditions and trader experience levels
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
             {eaSystems.map((ea, index) => (
-              <Card key={index} className={`p-8 bg-gradient-to-br ${ea.gradient} border-primary/20 hover:border-primary/40 transition-smooth relative overflow-hidden group`}>
+              <Card key={index} className={`p-8 bg-gradient-to-br ${ea.gradient} border-primary/20 hover:border-primary/40 transition-all duration-300 relative overflow-hidden group hover:shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1`}>
                 {ea.comingSoon && (
                   <div className="absolute top-4 right-4 bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold">
                     Coming Soon
                   </div>
                 )}
-                <h3 className="mb-2">{ea.name}</h3>
+                <h3 className="mb-2 text-foreground">{ea.name}</h3>
                 <p className="text-primary font-semibold mb-4">{ea.tagline}</p>
                 <p className="text-muted-foreground mb-6">{ea.description}</p>
                 <div className="mb-6">
@@ -163,7 +160,7 @@ const Index = () => {
       {/* Trust Section */}
       <section className="py-20 px-4 bg-card/30">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="mb-4">Trust & Verification - Our Proof is Public</h2>
+          <h2 className="mb-4 text-emerald-500 text-3xl md:text-4xl">Trust & Verification - Our Proof is Public</h2>
           <p className="text-xl text-muted-foreground mb-12">
             Edge should be proven, not just promised. We invite you to scrutinize our live results.
           </p>
@@ -194,7 +191,7 @@ const Index = () => {
       {/* Final CTA */}
       <section className="py-20 px-4 gradient-hero">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="mb-6">Discipline. Data. Peace of Mind.</h2>
+          <h2 className="mb-6 text-emerald-500 text-3xl md:text-4xl">Discipline. Data. Peace of Mind.</h2>
           <p className="text-xl text-muted-foreground mb-8">
             Join a global community of traders who are leaving emotional guesswork behind and embracing 
             a new era of systematic, data-driven execution.

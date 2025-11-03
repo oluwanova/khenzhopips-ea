@@ -33,9 +33,9 @@ const Contact = () => {
     {
       icon: <MessageSquare className="w-8 h-8 text-primary" />,
       title: "WhatsApp",
-      description: "Quick support and inquiries",
-      handle: "+1 234 567 8900",
-      link: "https://wa.me/1234567890"
+      description: "Quick support & inquiries",
+      handle: "+234 705 323 8050",
+      link: "https://wa.me/2347053238050"
     },
     {
       icon: <Send className="w-8 h-8 text-primary" />,
@@ -48,8 +48,8 @@ const Contact = () => {
       icon: <Mail className="w-8 h-8 text-primary" />,
       title: "Email",
       description: "Business and partnership inquiries",
-      handle: "info@khenzhopips.com",
-      link: "mailto:info@khenzhopips.com"
+      handle: "khenzhopips@gmail.com",
+      link: "mailto:khenzhopips@gmail.com"
     }
   ];
 
@@ -61,7 +61,7 @@ const Contact = () => {
         {/* Header */}
         <section className="py-16 px-4 gradient-hero">
           <div className="container mx-auto max-w-6xl text-center">
-            <h1 className="mb-6">Join KhenzhoPips' Edge</h1>
+            <h1 className="mb-6 text-amber-500 text-4xl md:text-5xl">Join KhenzhoPips' Edge</h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
               Ready to begin your journey? Get in touch and take the first step towards financial independence.
             </p>
@@ -74,7 +74,6 @@ const Contact = () => {
             <div className="grid lg:grid-cols-2 gap-12">
               {/* Connect Column */}
               <div>
-                <h2 className="mb-8">Connect With Us</h2>
                 
                 {/* Contact Methods */}
                 <div className="space-y-6 mb-12">
@@ -83,7 +82,7 @@ const Contact = () => {
                       <div className="flex items-start gap-4">
                         <div className="flex-shrink-0">{method.icon}</div>
                         <div className="flex-1">
-                          <h3 className="text-xl mb-2">{method.title}</h3>
+                          <h3 className="text-xl mb-2 text-foreground">{method.title}</h3>
                           <p className="text-muted-foreground text-sm mb-3">{method.description}</p>
                           <p className="text-primary font-semibold mb-3">{method.handle}</p>
                           <Button asChild variant="outline" size="sm">
@@ -102,7 +101,7 @@ const Contact = () => {
                   <div className="flex items-center gap-4 mb-6">
                     <Users className="w-12 h-12 text-primary" />
                     <div>
-                      <h3 className="text-xl">Community & Support</h3>
+                      <h3 className="text-xl text-foreground">Community & Support</h3>
                       <p className="text-muted-foreground text-sm">Join thousands of successful traders</p>
                     </div>
                   </div>
@@ -126,9 +125,9 @@ const Contact = () => {
               {/* Form Column */}
               <div>
                 <Card className="p-8 gradient-card border-primary/20">
-                  <h2 className="mb-2">Send Us a Message</h2>
+                  <h2 className="mb-2 text-emerald-500 text-3xl md:text-4xl">Send Us a Message</h2>           <br />
                   <p className="text-muted-foreground mb-8">
-                    Have questions? Fill out the form and we'll get back to you within 24 hours.
+                    Have questions? Fill out the form and we'll get back to you within 24 hours.       
                   </p>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -202,7 +201,11 @@ const Contact = () => {
                     </Button>
 
                     <p className="text-sm text-muted-foreground text-center">
-                      We typically respond within 24 hours
+                      We typically respond within 24 hours 
+                    </p>
+                    <p className="text-sm text-muted-foreground text-center">
+                    <br />
+“Trading isn’t about predicting the future — It’s about building a system that survives it.” 
                     </p>
                   </form>
                 </Card>

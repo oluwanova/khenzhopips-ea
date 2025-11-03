@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Youtube, Twitter, Send, Facebook } from "lucide-react";
+import { Youtube, Twitter, Send, Instagram, ShoppingCart } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -9,14 +9,18 @@ const Footer = () => {
           {/* Logo & Description */}
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center text-foreground font-bold text-xl">
-                KP
-              </div>
+              <img src="/KhenzhoPips Logo.png" alt="KhenzhoPips Logo" className="h-10" />
               <span className="font-bold text-xl">KhenzhoPips</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-md">
               Advanced algorithmic trading systems engineered for disciplined traders seeking a statistical edge.
             </p>
+            <div className="mt-6 text-xs text-muted-foreground">
+              <p>&copy; 2024 KhenzhoPips EA. All rights reserved.</p>
+              <p className="mt-1">
+                Trading involves risk. Past performance is not indicative of future results.
+              </p>
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -39,6 +43,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <a href="https://khhenzhopips.gumroad.com/l/KhenzhoPipsEA-LA" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-smooth">
+                  Purchase on Gumroad
+                </a>
+              </li>
+              <li>
                 <Link to="/disclaimer" className="text-muted-foreground hover:text-foreground transition-smooth">
                   Risk Disclaimer
                 </Link>
@@ -56,44 +65,50 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Join Our Community</h4>
             <div className="flex flex-wrap gap-2">
               <a
-                href="#"
+                href="https://t.me/khenzhopips"
+                target="_blank" rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-muted hover:bg-primary/20 flex items-center justify-center transition-smooth"
                 aria-label="Telegram"
               >
                 <Send size={18} />
               </a>
               <a
-                href="#"
+                href="https://www.youtube.com/@KhenzhoPips"
+                target="_blank" rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-muted hover:bg-primary/20 flex items-center justify-center transition-smooth"
                 aria-label="YouTube"
               >
                 <Youtube size={18} />
               </a>
               <a
-                href="#"
+                href="https://twitter.com/khenzhopips"
+                target="_blank" rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-muted hover:bg-primary/20 flex items-center justify-center transition-smooth"
                 aria-label="Twitter"
               >
                 <Twitter size={18} />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/khenzhopips/"
+                target="_blank" rel="noopener noreferrer"
                 className="w-10 h-10 rounded-lg bg-muted hover:bg-primary/20 flex items-center justify-center transition-smooth"
-                aria-label="Facebook"
+                aria-label="Instagram"
               >
-                <Facebook size={18} />
+                <Instagram size={18} />
+              </a>
+              <a
+                href="https://www.tiktok.com/@khenzhopips"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-lg bg-muted hover:bg-primary/20 flex items-center justify-center transition-smooth"
+                aria-label="TikTok"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tiktok"><path d="M12 12a4 4 0 1 0 4 4v-12a5 5 0 0 0-5-5v12a5 5 0 0 0 5 5Z"/></svg>
               </a>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 KhenzhoPips EA. All rights reserved.</p>
-          <p className="mt-2 text-xs">
-            Trading involves risk. Past performance is not indicative of future results.
-          </p>
-        </div>
       </div>
     </footer>
   );
