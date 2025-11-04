@@ -16,14 +16,18 @@ import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import Dashboard from "./pages/Dashboard"; // <-- NEW
+import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Component Imports
-import ProtectedRoute from "./components/ProtectedRoute"; // <-- NEW
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 
 const queryClient = new QueryClient();
 
+// Define all routes using the object-based approach
 const router = createBrowserRouter([
+  // Public routes
   { path: "/", element: <Index />, errorElement: <NotFound /> },
   { path: "/products", element: <Products /> },
   { path: "/performance", element: <Performance /> },
@@ -33,11 +37,22 @@ const router = createBrowserRouter([
   { path: "/disclaimer", element: <Disclaimer /> },
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <SignUp /> },
+
+  // Protected routes for standard users
   {
     element: <ProtectedRoute />,
     children: [
       { path: "/dashboard", element: <Dashboard /> },
-      // Add any other future protected routes here
+      // Add other future user-protected routes here
+    ],
+  },
+  
+  // Protected routes for admins
+  {
+    element: <AdminRoute />,
+    children: [
+      { path: "/admin", element: <AdminDashboard /> },
+      // Add other future admin-protected routes here
     ],
   },
 ]);

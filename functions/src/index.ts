@@ -1,30 +1,31 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import * as admin from "firebase-admin";
 
-import {setGlobalOptions} from "firebase-functions";
+admin.initializeApp();
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+export const addAdminRole = onCall(async (request) => {
+  // V2 syntax: Auth data is on request.auth
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "You must be logged in to call this function.");
+  }
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+  // Check if the user making the call is an admin
+  if (request.auth.token.admin !== true) {
+    throw new HttpsError("permission-denied", "You must be an admin to perform this action.");
+  }
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+  // V2 syntax: Input data is on request.data
+  const email = request.data.email;
+  if (!email || typeof email !== 'string') {
+    throw new HttpsError("invalid-argument", "The function must be called with a valid 'email' string.");
+  }
+  
+  try {
+    const user = await admin.auth().getUserByEmail(email);
+    await admin.auth().setCustomUserClaims(user.uid, { admin: true });
+    return { message: `Success! ${email} has been made an admin.` };
+  } catch (error) {
+    console.error("Error setting admin claim:", error);
+    throw new HttpsError("internal", "Failed to set admin role. The user may not exist.");
+  }
+});
