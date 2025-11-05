@@ -191,7 +191,7 @@ const Index = () => {
       {/* Final CTA */}
       <section className="py-20 px-4 gradient-hero">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-emerald-500 text-3xl md:text-4xl">Discipline. Data. Peace of Mind.</h2>
+          <h2 className="mb-6 text-emerald-500 text-3xl md:text-4xl">Discipline. Data. Structure.</h2>
           <p className="text-xl text-muted-foreground mb-8">
             Join a global community of traders who are leaving emotional guesswork behind and embracing 
             a new era of systematic, data-driven execution.

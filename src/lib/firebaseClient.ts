@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions"; // <-- IMPORT THE FUNCTIONS SERVICE
 
 // Retrieve Firebase config from environment variables
 const firebaseConfig = {
@@ -11,14 +13,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Add a check to ensure all required variables are present
 if (!firebaseConfig.apiKey) {
   throw new Error("Missing Firebase API Key. Please check your .env.local file.");
 }
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication and export it for use in other files
-// This is a NAMED EXPORT, so you import it with { auth }
+// Initialize and export all required Firebase services
 export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const functions = getFunctions(app); // <-- INITIALIZE AND EXPORT FUNCTIONS

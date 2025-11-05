@@ -14,20 +14,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChanged returns an unsubscribe function
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
-
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
+  const value = { user, loading };
+
+  // This is the most important fix:
+  // It prevents components from rendering until the initial authentication check is complete,
+  // which stops race conditions and content flashing.
   return (
-    <AuthContext.Provider value={{ user, loading }}>
-      {/* Don't render children until the initial auth check is complete */}
-      {/* This prevents flashing content or incorrect redirects */}
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );

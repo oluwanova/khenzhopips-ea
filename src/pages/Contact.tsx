@@ -9,9 +9,12 @@ import { MessageSquare, Send, Mail, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { db } from "@/lib/firebaseClient"; // <-- STEP 1: Import the database
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"; // <-- STEP 2: Import Firestore functions
 
 const Contact = () => {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false); // <-- Add loading state
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -20,13 +23,43 @@ const Contact = () => {
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // STEP 3: Replace the handleSubmit function
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Message Sent!",
-      description: "We'll get back to you within 24 hours.",
-    });
-    setFormData({ firstName: "", lastName: "", email: "", service: "", message: "" });
+    setLoading(true);
+
+    if (!formData.firstName || !formData.email || !formData.message || !formData.service) {
+      toast({ title: "Error", description: "Please fill out all required fields.", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const messagesCollectionRef = collection(db, "messages");
+      await addDoc(messagesCollectionRef, {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        service: formData.service,
+        message: formData.message,
+        createdAt: serverTimestamp(),
+        read: false,
+      });
+
+      toast({
+        title: "Message Sent!",
+        description: "We'll get back to you within 24 hours.",
+      });
+      // Clear the form on successful submission
+      setFormData({ firstName: "", lastName: "", email: "", service: "", message: "" });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Submission Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   const contactMethods = [
@@ -74,8 +107,6 @@ const Contact = () => {
             <div className="grid lg:grid-cols-2 gap-12">
               {/* Connect Column */}
               <div>
-                
-                {/* Contact Methods */}
                 <div className="space-y-6 mb-12">
                   {contactMethods.map((method, idx) => (
                     <Card key={idx} className="p-6 gradient-card border-primary/20 hover:border-primary/40 transition-smooth">
@@ -96,7 +127,6 @@ const Contact = () => {
                   ))}
                 </div>
 
-                {/* Community Stats */}
                 <Card className="p-8 gradient-card border-primary/20">
                   <div className="flex items-center gap-4 mb-6">
                     <Users className="w-12 h-12 text-primary" />
@@ -125,7 +155,7 @@ const Contact = () => {
               {/* Form Column */}
               <div>
                 <Card className="p-8 gradient-card border-primary/20">
-                  <h2 className="mb-2 text-emerald-500 text-3xl md:text-4xl">Send Us a Message</h2>           <br />
+                  <h2 className="mb-2 text-emerald-500 text-3xl md:text-4xl">Send Us a Message</h2>
                   <p className="text-muted-foreground mb-8">
                     Have questions? Fill out the form and we'll get back to you within 24 hours.       
                   </p>
@@ -134,47 +164,21 @@ const Contact = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="firstName">First Name</Label>
-                        <Input
-                          id="firstName"
-                          value={formData.firstName}
-                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                          required
-                          className="mt-2"
-                        />
+                        <Input id="firstName" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} required className="mt-2" />
                       </div>
                       <div>
                         <Label htmlFor="lastName">Last Name</Label>
-                        <Input
-                          id="lastName"
-                          value={formData.lastName}
-                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                          required
-                          className="mt-2"
-                        />
+                        <Input id="lastName" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} required className="mt-2" />
                       </div>
                     </div>
-
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        required
-                        className="mt-2"
-                      />
+                      <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required className="mt-2" />
                     </div>
-
                     <div>
                       <Label htmlFor="service">Service Interest</Label>
-                      <Select 
-                        value={formData.service} 
-                        onValueChange={(value) => setFormData({ ...formData, service: value })}
-                      >
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select a topic" />
-                        </SelectTrigger>
+                      <Select value={formData.service} onValueChange={(value) => setFormData({ ...formData, service: value })}>
+                        <SelectTrigger className="mt-2"><SelectValue placeholder="Select a topic" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="general">General Question</SelectItem>
                           <SelectItem value="presale">Pre-Sale Inquiry</SelectItem>
@@ -183,30 +187,13 @@ const Contact = () => {
                         </SelectContent>
                       </Select>
                     </div>
-
                     <div>
                       <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        required
-                        rows={6}
-                        className="mt-2"
-                      />
+                      <Textarea id="message" value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} required rows={6} className="mt-2" />
                     </div>
-
-                    <Button type="submit" className="w-full gradient-primary shadow-glow">
-                      Send Message
+                    <Button type="submit" className="w-full gradient-primary shadow-glow" disabled={loading}>
+                      {loading ? "Sending..." : "Send Message"}
                     </Button>
-
-                    <p className="text-sm text-muted-foreground text-center">
-                      We typically respond within 24 hours 
-                    </p>
-                    <p className="text-sm text-muted-foreground text-center">
-                    <br />
-“Trading isn’t about predicting the future — It’s about building a system that survives it.” 
-                    </p>
                   </form>
                 </Card>
               </div>
@@ -214,7 +201,6 @@ const Contact = () => {
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );

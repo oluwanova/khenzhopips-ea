@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 
-// Page Imports
+// --- Page Imports ---
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import Performance from "./pages/Performance";
@@ -18,8 +18,14 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import PleaseVerify from "./pages/PleaseVerify"; 
 
-// Component Imports
+// --- [ADD THESE THREE NEW PAGE IMPORTS] ---
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
+
+// --- Component Imports ---
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
@@ -37,13 +43,18 @@ const router = createBrowserRouter([
   { path: "/disclaimer", element: <Disclaimer /> },
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <SignUp /> },
+  { path: "/please-verify", element: <PleaseVerify /> },
+  
+  // --- [ADD THESE THREE NEW PUBLIC ROUTES] ---
+  { path: "/terms-of-service", element: <TermsOfService /> },
+  { path: "/privacy-policy", element: <PrivacyPolicy /> },
+  { path: "/refund-policy", element: <RefundPolicy /> },
 
   // Protected routes for standard users
   {
     element: <ProtectedRoute />,
     children: [
       { path: "/dashboard", element: <Dashboard /> },
-      // Add other future user-protected routes here
     ],
   },
   
@@ -52,7 +63,6 @@ const router = createBrowserRouter([
     element: <AdminRoute />,
     children: [
       { path: "/admin", element: <AdminDashboard /> },
-      // Add other future admin-protected routes here
     ],
   },
 ]);

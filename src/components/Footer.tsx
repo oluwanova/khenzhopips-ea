@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Youtube, Twitter, Send, Instagram, ShoppingCart } from "lucide-react";
+import { Youtube, Twitter, Send, Instagram } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -107,6 +107,19 @@ const Footer = () => {
               </a>
             </div>
           </div>
+        </div>
+
+        {/* --- [NEW] Legal Links Section --- */}
+        <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8 text-xs">
+            <Link to="/terms-of-service" className="text-muted-foreground hover:text-foreground transition-smooth">
+                Terms of Service
+            </Link>
+            <Link to="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-smooth">
+                Privacy Policy
+            </Link>
+            <Link to="/refund-policy" className="text-muted-foreground hover:text-foreground transition-smooth">
+                Refund Policy
+            </Link>
         </div>
 
       </div>

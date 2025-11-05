@@ -5,11 +5,26 @@ import { TrendingUp, Zap, Brain, Shield } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+// [NEW] Imports for handling purchases and user state
+import { httpsCallable } from "firebase/functions";
+import { functions } from "@/lib/firebaseClient";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+
 const Products = () => {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+  // --- [NEW] State and hooks for the purchasing logic ---
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
+
+  // --- [UPDATED] Product data with specific IDs and simplified pricing ---
   const products = [
     {
-      id: "scout",
+      id: "scout_v1",
       icon: <TrendingUp className="w-12 h-12 text-amber-500" />,
       name: "Scout EA v1.0",
       tagline: "The Range Pilot",
@@ -21,19 +36,10 @@ const Products = () => {
         "High-Speed, Low-Latency Execution: <100ms execution latency",
         "Built-in Drawdown Control: Emergency stop protocols"
       ],
-      performance: {
-        profitFactor: "1.82",
-        maxDrawdown: "7.6%",
-        sharpeRatio: "1.45",
-        recoveryFactor: "3.12"
-      },
-      pricing: [
-        { type: "Lifetime", price: "$497", description: "Permanent access & all v1.x updates." },
-        { type: "Monthly", price: "$97/mo", description: "Full access, cancel anytime." }
-      ]
+      price: "$497",
     },
     {
-      id: "navigator",
+      id: "navigator_v2",
       icon: <Zap className="w-12 h-12 text-emerald-500" />,
       name: "Navigator EA v2.0",
       tagline: "The Adaptive Hybrid",
@@ -45,19 +51,10 @@ const Products = () => {
         "Advanced News Filter: Can pause trading during high-impact news events",
         "Self-Optimizing Logic: Adapts to changing market dynamics"
       ],
-      performance: {
-        profitFactor: "2.15",
-        maxDrawdown: "12.3%",
-        sharpeRatio: "1.68",
-        recoveryFactor: "4.21"
-      },
-      pricing: [
-        { type: "Lifetime", price: "$697", description: "Permanent access & all v2.x updates." },
-        { type: "Monthly", price: "$127/mo", description: "Full access, cancel anytime." }
-      ]
+      price: "$697",
     },
     {
-      id: "sentinel",
+      id: "sentinel_v3",
       icon: <Brain className="w-12 h-12 text-amber-500" />,
       name: "Sentinel EA v3.0",
       tagline: "The Neural Executor",
@@ -69,32 +66,58 @@ const Products = () => {
         "Self-Optimizing Parameters: Periodically re-calibrates its own settings",
         "Neural Pattern Recognition: Identifies complex market structures",
       ],
-      performance: {
-        profitFactor: "2.45",
-        maxDrawdown: "18.5%",
-        sharpeRatio: "1.92",
-        recoveryFactor: "5.33",
-      },
-      pricing: [
-        { type: "Lifetime", price: "$997", description: "Permanent access & all v3.x updates." },
-        { type: "Monthly", price: "$197/mo", description: "Full access, cancel anytime." },
-      ],
+      price: "$997",
     },
+    // Inside the products array in Products.tsx
+
     {
-      id: "guardian",
+      id: "guardian_v4",
       icon: <Shield className="w-12 h-12 text-emerald-500" />,
       name: "Tactical Guardian v4.0",
       tagline: "The Hedging Specialist",
       subtitle: "Advanced correlation trading and high-frequency execution for ultimate portfolio protection. For professional and institutional traders.",
-      features: [],
-      performance: {},
-      pricing: [],
-      comingSoon: true,
+      // [FIX] Added features
+      features: [
+        "Multi-Symbol Correlation Engine: Identifies hedging opportunities across pairs.",
+        "Real-Time Risk Balancing: Dynamically adjusts positions to maintain portfolio neutrality.",
+        "High-Frequency Execution Logic: Optimized for rapid entry and exit.",
+        "Institutional-Grade Drawdown Control: Hard limits and equity protection protocols.",
+        "Fully Customizable Symbol Sets: Define your own hedging universe (e.g., EURUSD vs. USDCHF)."
+      ],
+      // [FIX] Added a price
+      price: "$1297",
+      // [FIX] Removed the comingSoon property
     },
   ];
 
   const handleToggleExpand = (productId: string) => {
     setExpandedCard(prev => (prev === productId ? null : productId));
+  };
+
+  // --- [NEW] Function to handle the purchase logic ---
+  const handlePurchase = async (productId: string, productName: string) => {
+    if (!user) {
+      toast({ title: "Authentication Required", description: "Please log in or create an account to purchase.", variant: "destructive" });
+      navigate("/login");
+      return;
+    }
+    setPurchasingId(productId);
+    try {
+      const purchaseFn = httpsCallable(functions, 'purchaseProduct');
+      const result = await purchaseFn({ productId, productName });
+      
+      const data = result.data as { success: boolean }; // Type assertion
+      if (data.success) {
+        toast({ title: "Purchase Successful!", description: "Your license key is now available on your dashboard." });
+        navigate("/dashboard");
+      } else {
+        throw new Error("Purchase failed on the server.");
+      }
+
+    } catch (err: any) {
+      toast({ title: "Purchase Failed", description: err.message, variant: "destructive" });
+    }
+    setPurchasingId(null);
   };
 
   return (
@@ -144,6 +167,7 @@ const Products = () => {
             <div className="grid md:grid-cols-2 gap-8">
               {products.map((product) => {
                 const isExpanded = expandedCard === product.id;
+                const isPurchasing = purchasingId === product.id;
                 return (
                 <Card key={product.id} id={product.id} className={`p-8 md:p-12 gradient-card border-primary/20 flex flex-col transition-all duration-300 ${product.comingSoon ? 'opacity-75' : ''}`}>
                   <div className="flex-grow">
@@ -179,19 +203,16 @@ const Products = () => {
                               </ul>
                             </div>
 
-                            {/* Pricing */}
+                            {/* [UPDATED] Pricing Section */}
                             <div className="mb-8">
-                              <h3 className="text-lg mb-3 text-foreground">Pricing Options</h3>
-                              <div className="grid sm:grid-cols-2 gap-4">
-                                {product.pricing.map((option, idx) => (
-                                  <Card key={idx} className="p-4 bg-background/50 border-primary/10 hover:border-amber-500/30 transition-smooth">
-                                    <div className="text-xs text-muted-foreground mb-1 font-semibold">{option.type}</div>
-                                    <div className="text-xl font-bold text-amber-500 mb-2">{option.price}</div>
-                                    <p className="text-xs text-muted-foreground mb-3">{option.description}</p>
-                                    <Button size="sm" className="w-full gradient-primary">Select Plan</Button>
-                                  </Card>
-                                ))}
-                              </div>
+                              <h3 className="text-lg mb-3 text-foreground">Lifetime License</h3>
+                              <Card className="p-4 bg-background/50 border-primary/10">
+                                <div className="text-2xl font-bold text-amber-500 mb-2">{product.price}</div>
+                                <p className="text-sm text-muted-foreground mb-4">Permanent access with all future updates for this version.</p>
+                                <Button size="lg" className="w-full gradient-primary" onClick={() => handlePurchase(product.id, product.name)} disabled={isPurchasing}>
+                                  {isPurchasing ? "Processing..." : "Purchase Now"}
+                                </Button>
+                              </Card>
                             </div>
                           </>
                         )}
@@ -200,11 +221,11 @@ const Products = () => {
                   </div>
                   {product.comingSoon ? (
                     <Button variant="outline" size="lg" disabled className="mt-auto">
-                      Join The Early Access Waitlist
+                      Join The Waitlist
                     </Button>
                   ) : (
                     <Button onClick={() => handleToggleExpand(product.id)} variant="outline" className="mt-auto">
-                      {isExpanded ? "Show Less" : "View Details & Pricing"}
+                      {isExpanded ? "Show Less" : "View Details & Purchase"}
                     </Button>
                   )}
                 </Card>
