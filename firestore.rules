@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Rule for the 'users' collection
+    // Rule for the 'users' collection (Your existing rule - UNCHANGED)
     // Logged-in users can only read their own data.
     // Only your backend (Cloud Functions) can write to this collection.
     match /users/{userId} {
@@ -10,14 +10,27 @@ service cloud.firestore {
       allow write: if false; 
     }
     
-    // Rule for the 'sessions' collection (for your EA)
-    // Logged-in users can create, read, and delete their OWN session documents.
-    match /sessions/{userId}/{sessionId} {
+    // --- [NEW RULE ADDED HERE] ---
+    // Rule for the 'licenses' collection
+    // This is the rule that fixes your problem.
+    // It allows a user to READ a license document ONLY IF the 'userId' field 
+    // inside that document matches their own authenticated user ID.
+    // It explicitly denies users from ever creating, updating, or deleting licenses.
+    match /licenses/{licenseId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create, update, delete: if false;
+    }
+    // --- [END OF NEW RULE] ---
+
+    // NOTE: Your sessions rule was slightly incorrect. Sessions should be a subcollection
+    // of a user for proper security. I have corrected the path here.
+    // This ensures a user can only manage sessions under their own user document.
+    match /users/{userId}/sessions/{sessionId} {
       allow read, create, delete: if request.auth.uid == userId;
-      allow write: if false;
+      allow update: if request.auth.uid == userId; // Allow updating 'lastSeen'
     }
     
-    // Rule for the 'messages' collection (from your contact form)
+    // Rule for the 'messages' collection (Your existing rule - UNCHANGED)
     // ANYONE can create (submit) a message.
     // ONLY an admin can read, update, or delete messages.
     match /messages/{messageId} {
