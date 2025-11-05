@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AppUser {
   uid: string;
@@ -34,11 +35,22 @@ const AdminDashboard = () => {
   const [adminEmail, setAdminEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- [NEW] State for the Mint License form ---
+  const [mintUid, setMintUid] = useState("");
+  const [mintProductId, setMintProductId] = useState("");
+  const [isMinting, setIsMinting] = useState(false);
+  
+  const availableProducts = [
+      { id: "scout_v1", name: "Scout EA v1.0" },
+      { id: "navigator_v2", name: "Navigator EA v2.0" },
+      { id: "sentinel_v3", name: "Sentinel EA v3.0" },
+      { id: "guardian_v4", name: "Tactical Guardian v4.0" },
+  ];
+
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Correctly call 'getAllUsers'
       const getAllUsersFn = httpsCallable(functions, 'getAllUsers');
       const result = await getAllUsersFn();
       const data = result.data as { users?: AppUser[] };
@@ -66,7 +78,7 @@ const AdminDashboard = () => {
       await addAdminRoleFn({ email: adminEmail });
       toast({ title: "Success", description: `${adminEmail} is now an admin.` });
       setAdminEmail("");
-      fetchUsers(); // Refresh list
+      fetchUsers();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -78,34 +90,48 @@ const AdminDashboard = () => {
       const setUserDisabledStatusFn = httpsCallable(functions, 'setUserDisabledStatus');
       await setUserDisabledStatusFn({ uid, disabled: !currentStatus });
       toast({ title: "Success", description: `User status updated.` });
-      fetchUsers(); // Refresh list
+      fetchUsers();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
   const handleDeleteUser = async (uid: string) => {
-    if (window.confirm("Are you sure you want to PERMANENTLY delete this user? This cannot be undone.")) {
+    if (window.confirm("Are you sure you want to PERMANENTLY delete this user and all their licenses? This cannot be undone.")) {
       try {
         const deleteUserFn = httpsCallable(functions, 'deleteUser');
         await deleteUserFn({ uid });
         toast({ title: "Success", description: "User has been deleted." });
-        fetchUsers(); // Refresh list
+        fetchUsers();
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       }
     }
   };
   
-  const handleUpdateSubscription = async (uid: string, newStatus: string) => {
-    try {
-      const updateUserSubscriptionFn = httpsCallable(functions, 'updateUserSubscription');
-      await updateUserSubscriptionFn({ uid, newStatus });
-      toast({ title: "Success", description: `User subscription updated to ${newStatus}.`});
-      // In a full app, we would also refresh the Firestore data here, but for now a toast is fine.
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+  // --- [NEW] Function to mint a license for a user ---
+  const handleMintLicense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mintUid || !mintProductId) {
+      toast({ title: "Missing Information", description: "Please provide a User ID and select a product.", variant: "destructive"});
+      return;
     }
+    setIsMinting(true);
+    try {
+      const adminMintLicenseFn = httpsCallable(functions, 'adminMintLicense');
+      const selectedProd = availableProducts.find(p => p.id === mintProductId);
+      await adminMintLicenseFn({
+        uid: mintUid,
+        productId: mintProductId,
+        productName: selectedProd?.name
+      });
+      toast({ title: "Success!", description: `Lifetime license for ${selectedProd?.name} created for user ${mintUid}`});
+      setMintUid("");
+      setMintProductId("");
+    } catch (err: any) {
+      toast({ title: "Minting Failed", description: err.message, variant: "destructive" });
+    }
+    setIsMinting(false);
   };
 
   return (
@@ -114,27 +140,59 @@ const AdminDashboard = () => {
       <main className="flex-grow container mx-auto p-4 pt-24 space-y-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Grant Admin Privileges</CardTitle>
-            <CardDescription>Enter the email of an existing user to make them an admin.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleMakeAdmin} className="flex flex-col sm:flex-row items-center gap-4">
-              <Input
-                type="email"
-                placeholder="user@example.com"
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
-                required
-                className="flex-grow"
-              />
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                {isSubmitting ? "Granting..." : "Make Admin"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <div className="grid md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Grant Admin Privileges</CardTitle>
+              <CardDescription>Enter the email of a user to make them an admin.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleMakeAdmin} className="flex items-center gap-4">
+                <Input
+                  type="email"
+                  placeholder="user@example.com"
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  required
+                />
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Granting..." : "Make Admin"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          
+          {/* --- [NEW] Mint License Card --- */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Mint a Free License</CardTitle>
+              <CardDescription>Manually generate a lifetime license for a user. (For testing or special grants)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleMintLicense} className="space-y-4">
+                <Input
+                  placeholder="Paste User ID (UID) here"
+                  value={mintUid}
+                  onChange={(e) => setMintUid(e.target.value)}
+                  required
+                />
+                <Select onValueChange={setMintProductId} value={mintProductId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a product to grant..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProducts.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="submit" disabled={isMinting} className="w-full">
+                  {isMinting ? "Minting..." : "Generate Lifetime License"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
@@ -150,7 +208,7 @@ const AdminDashboard = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Last Sign-In</TableHead>
+                    <TableHead>User ID (UID)</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -162,25 +220,17 @@ const AdminDashboard = () => {
                         {user.isDisabled ? <Badge variant="destructive">Disabled</Badge> : <Badge variant="secondary">Active</Badge>}
                       </TableCell>
                       <TableCell>{user.isAdmin && <Badge>Admin</Badge>}</TableCell>
-                      <TableCell>{new Date(user.lastSignInTime).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <code className="text-xs">{user.uid}</code>
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">...</Button>
+                            <Button variant="ghost" size="sm">Actions</Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleToggleDisable(user.uid, user.isDisabled)}>
                               {user.isDisabled ? 'Enable User' : 'Disable User'}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleUpdateSubscription(user.uid, 'lifetime')}>
-                              Set Subscription to Lifetime
-                            </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => handleUpdateSubscription(user.uid, 'monthly')}>
-                              Set Subscription to Monthly
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleUpdateSubscription(user.uid, 'free_trial')}>
-                              Reset to Trial
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteUser(user.uid)}>
