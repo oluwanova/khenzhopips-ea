@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { auth, db } from "@/lib/firebaseClient";
+import { auth, db, functions } from "@/lib/firebaseClient";
 import { signOut } from "firebase/auth";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Copy, Clock, Star } from "lucide-react";
+import { Download, Copy, Clock, Star, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Updated interface to include license type and expiration
 interface License {
   id: string;
-  productId: string;
+  productId: string; // This will now be 'guardian', 'sentinel', etc.
   productName: string;
   licenseKey: string;
   createdAt: Timestamp;
-  type: 'monthly' | 'lifetime'; // License type
-  expiresAt?: Timestamp; // Optional expiration date for monthly licenses
+  type: 'monthly' | 'lifetime';
+  expiresAt?: Timestamp;
   status: string;
 }
 
@@ -31,12 +31,11 @@ const Dashboard = () => {
   
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Helper function to format the expiration date
   const formatExpiry = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate();
-    // Check if the subscription has expired
     if (date < new Date()) {
       return `Expired on ${date.toLocaleDateString()}`;
     }
@@ -52,7 +51,6 @@ const Dashboard = () => {
           const q = query(licensesRef, where("userId", "==", user.uid));
           const querySnapshot = await getDocs(q);
           const userLicenses = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as License));
-          // Sort licenses by creation date, newest first
           setLicenses(userLicenses.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
         } catch (error) {
           console.error("Failed to fetch licenses:", error);
@@ -65,6 +63,29 @@ const Dashboard = () => {
     
     fetchLicenses();
   }, [user, toast]);
+  
+  const handleDownload = async (productId: string) => {
+    setDownloadingId(productId);
+    try {
+        const getDownloadUrlFn = httpsCallable(functions, 'getDownloadUrlForProduct');
+        
+        // The 'productId' from the license document is already the simple one ('guardian', etc.)
+        // so we can pass it directly.
+        const result = await getDownloadUrlFn({ productId: productId });
+        
+        const data = result.data as { downloadUrl: string };
+
+        if (data.downloadUrl) {
+            window.open(data.downloadUrl, '_blank');
+        } else {
+            throw new Error("Could not retrieve a valid download link.");
+        }
+    } catch (err: any) {
+        toast({ title: "Download Failed", description: err.message, variant: "destructive" });
+    } finally {
+        setDownloadingId(null);
+    }
+  };
 
   const handleCopyToClipboard = (key: string) => {
     navigator.clipboard.writeText(key);
@@ -89,7 +110,8 @@ const Dashboard = () => {
   }
 
   return (
-<div className="min-h-screen flex flex-col">      <Navbar />
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
       <main className="flex-grow flex items-center justify-center p-4 pt-24 pb-12">
         <Card className="w-full max-w-3xl shadow-lg">
           <CardHeader>
@@ -128,8 +150,17 @@ const Dashboard = () => {
                             </p>
                           )}
                         </div>
-                        <Button className="w-full sm:w-auto mt-2 sm:mt-0">
-                          <Download className="mr-2 h-4 w-4" />Download EA
+                        <Button 
+                            className="w-full sm:w-auto mt-2 sm:mt-0"
+                            disabled={downloadingId === license.productId}
+                            onClick={() => handleDownload(license.productId)}
+                        >
+                          {downloadingId === license.productId ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Download className="mr-2 h-4 w-4" />
+                          )}
+                          {downloadingId === license.productId ? "Preparing..." : "Download EA"}
                         </Button>
                       </li>
                     ))}

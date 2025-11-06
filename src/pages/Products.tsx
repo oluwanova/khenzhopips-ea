@@ -18,10 +18,9 @@ const Products = () => {
   const navigate = useNavigate();
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
 
-  // --- [FINAL CORRECTED] Product data with all original details & no Gumroad ---
   const products = [
     {
-      id: "scout_v1",
+      id: "scout", // <-- UPDATED
       icon: <TrendingUp className="w-12 h-12 text-amber-500" />,
       name: "Scout EA v1.0",
       tagline: "The Range Pilot",
@@ -36,7 +35,7 @@ const Products = () => {
       pricing: { monthly: 25, lifetime: 250 },
     },
     {
-      id: "navigator_v2",
+      id: "navigator", // <-- UPDATED
       icon: <Zap className="w-12 h-12 text-emerald-500" />,
       name: "Navigator EA v2.0",
       tagline: "The Adaptive Hybrid",
@@ -51,7 +50,7 @@ const Products = () => {
       pricing: { monthly: 50, lifetime: 500 },
     },
     {
-      id: "sentinel_v3",
+      id: "sentinel", // <-- UPDATED
       icon: <Brain className="w-12 h-12 text-amber-500" />,
       name: "Sentinel EA v3.0",
       tagline: "The Neural Executor",
@@ -66,7 +65,7 @@ const Products = () => {
       pricing: { monthly: 100, lifetime: 1000 },
     },
     {
-      id: "guardian_v4",
+      id: "guardian", // <-- UPDATED
       icon: <Shield className="w-12 h-12 text-emerald-500" />,
       name: "Tactical Guardian v4.0",
       tagline: "The Hedging Specialist",
