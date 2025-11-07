@@ -24,7 +24,6 @@ const ensureIsAdmin = (context: any) => {
 // --- [CORRECT NAME] INTERNAL HELPER FOR CREATING LICENSES ---
 const createLicenseForUser = async (uid: string, productId: string, productName: string, source: string, planType: 'monthly' | 'lifetime', maxSessions: number = 2) => {
   const licenseKey = `KP-${productId.toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-  
   const licensesRef = admin.firestore().collection('licenses');
   
   if (planType === 'lifetime') {
@@ -36,15 +35,9 @@ const createLicenseForUser = async (uid: string, productId: string, productName:
   }
 
   const newLicense: any = {
-    userId: uid,
-    productId: productId,
-    productName: productName,
-    licenseKey: licenseKey,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    status: "active",
-    maxSessions: maxSessions,
-    source: source,
-    type: planType,
+    userId: uid, productId: productId, productName: productName, licenseKey: licenseKey,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(), status: "active", maxSessions: maxSessions,
+    source: source, type: planType,
   };
 
   if (planType === 'monthly') {
@@ -69,17 +62,14 @@ export const createNowPaymentsInvoice = onCall({ cors: true }, async (request) =
   if (planType !== 'lifetime' && planType !== 'monthly') { throw new HttpsError("invalid-argument", "Invalid plan type specified."); }
 
   const invoiceData = {
-    price_amount: parseFloat(price),
-    price_currency: 'usd',
-    order_id: `${productId}|${uid}|${planType}`,
+    price_amount: parseFloat(price), price_currency: 'usd', order_id: `${productId}|${uid}|${planType}`,
     order_description: `${productName} (${planType === 'lifetime' ? 'Lifetime' : 'Monthly'})`,
-    success_url: `${appUrl.value()}/dashboard?purchase=success`,
-    cancel_url: `${appUrl.value()}/products`,
+    success_url: `${appUrl.value()}/dashboard?purchase=success`, cancel_url: `${appUrl.value()}/products`,
   };
 
   try {
     const response = await axios.post('https://api.nowpayments.io/v1/invoice', invoiceData, { headers: { 'x-api-key': nowPaymentsApiKey.value() } });
-   return { checkoutUrl: (response.data as { invoice_url: string }).invoice_url };
+    return { checkoutUrl: (response.data as { invoice_url: string }).invoice_url };
   } catch (error: any) {
     logger.error("NOWPayments invoice creation failed:", error.response?.data || error.message);
     throw new HttpsError("internal", "Could not create a crypto invoice.");
@@ -111,7 +101,6 @@ export const nowPaymentsWebhook = onRequest(async (req, res) => {
                 res.status(400).send("Missing required metadata.");
                 return;
             }
-            // --- [CORRECT NAME] ---
             await createLicenseForUser(uid, productId, productName, 'nowpayments', planType as ('lifetime' | 'monthly'));
         }
         
@@ -123,8 +112,6 @@ export const nowPaymentsWebhook = onRequest(async (req, res) => {
     }
 });
 
-
-// --- EA FACING & ADMIN FUNCTIONS ---
 export const adminMintLicense = onCall({ cors: true }, async (request) => {
     ensureIsAdmin(request);
     const { uid, productId, productName, maxSessions } = request.data;
@@ -132,7 +119,6 @@ export const adminMintLicense = onCall({ cors: true }, async (request) => {
         throw new HttpsError("invalid-argument", "UID, Product ID, and Product Name are required.");
     }
     try {
-        // --- [CORRECT NAME] ---
         await createLicenseForUser(uid, productId, productName, 'admin', 'lifetime', maxSessions || 2);
         return { success: true, message: `Lifetime license for ${productName} created for user ${uid}.` };
     } catch (error: any) {
@@ -145,13 +131,9 @@ export const adminMintLicense = onCall({ cors: true }, async (request) => {
 export const updateLicenseSettings = onCall({ cors: true }, async (request) => {
     ensureIsAdmin(request);
     const { licenseId, maxSessions } = request.data;
-    if (!licenseId || !maxSessions) {
-        throw new HttpsError("invalid-argument", "A license ID and maxSessions count are required.");
-    }
+    if (!licenseId || !maxSessions) { throw new HttpsError("invalid-argument", "A license ID and maxSessions count are required."); }
     const sessionCount = parseInt(maxSessions, 10);
-    if (isNaN(sessionCount) || sessionCount < 1) {
-        throw new HttpsError("invalid-argument", "maxSessions must be a number greater than 0.");
-    }
+    if (isNaN(sessionCount) || sessionCount < 1) { throw new HttpsError("invalid-argument", "maxSessions must be a number greater than 0."); }
     try {
         const licenseRef = admin.firestore().collection('licenses').doc(licenseId);
         await licenseRef.update({ maxSessions: sessionCount });
@@ -166,9 +148,7 @@ export const updateLicenseSettings = onCall({ cors: true }, async (request) => {
 export const admin_updateLicenseStatus = onCall({ cors: true }, async (request) => {
     ensureIsAdmin(request);
     const { licenseId, status } = request.data;
-    if (!licenseId || !status) {
-        throw new HttpsError("invalid-argument", "A license ID and a new status are required.");
-    }
+    if (!licenseId || !status) { throw new HttpsError("invalid-argument", "A license ID and a new status are required."); }
     try {
         const licenseRef = admin.firestore().collection('licenses').doc(licenseId);
         await licenseRef.update({ status: status });
@@ -180,15 +160,11 @@ export const admin_updateLicenseStatus = onCall({ cors: true }, async (request) 
     }
 });
 
-// --- [CORRECT NAME AND PLACEMENT] ---
 export const getAllLicenses = onCall({ cors: true }, async (request) => {
     ensureIsAdmin(request);
     try {
         const licensesSnapshot = await admin.firestore().collection('licenses').orderBy('createdAt', 'desc').get();
-        const licenses = licensesSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const licenses = licensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         return { licenses };
     } catch (error) {
         logger.error("Failed to fetch all licenses:", error);
@@ -197,26 +173,14 @@ export const getAllLicenses = onCall({ cors: true }, async (request) => {
 });
 
 export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) => {
-    if (!request.auth) {
-        throw new HttpsError("unauthenticated", "You must be logged in to download files.");
-    }
+    if (!request.auth) { throw new HttpsError("unauthenticated", "You must be logged in to download files."); }
     const uid = request.auth.uid;
     const { productId } = request.data;
-    if (!productId) {
-        throw new HttpsError("invalid-argument", "A product ID is required.");
-    }
+    if (!productId) { throw new HttpsError("invalid-argument", "A product ID is required."); }
 
     const licensesRef = admin.firestore().collection('licenses');
-    const licenseQuery = await licensesRef
-        .where('userId', '==', uid)
-        .where('productId', '==', productId)
-        .where('status', '==', 'active')
-        .limit(1)
-        .get();
-
-    if (licenseQuery.empty) {
-        throw new HttpsError("permission-denied", "You do not have an active license for this product.");
-    }
+    const licenseQuery = await licensesRef.where('userId', '==', uid).where('productId', '==', productId).where('status', '==', 'active').limit(1).get();
+    if (licenseQuery.empty) { throw new HttpsError("permission-denied", "You do not have an active license for this product."); }
 
     try {
         const bucket = getStorage().bucket("khenzhopipsea-v2.appspot.com");
@@ -238,24 +202,18 @@ export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) =
 
 export const verifyLicense = onCall({ cors: true }, async (request) => {
     const { licenseKey, productId } = request.data;
-    if (!licenseKey || !productId) { 
-        throw new HttpsError("invalid-argument", "A license key and product ID are required."); 
-    }
+    if (!licenseKey || !productId) { throw new HttpsError("invalid-argument", "A license key and product ID are required."); }
 
     const licensesRef = admin.firestore().collection('licenses');
     const snapshot = await licensesRef.where("licenseKey", "==", licenseKey).limit(1).get();
-    if (snapshot.empty) { 
-        throw new HttpsError("not-found", "License key is invalid or not found."); 
-    }
+    if (snapshot.empty) { throw new HttpsError("not-found", "License key is invalid or not found."); }
 
     const licenseData = snapshot.docs[0].data();
 
     if (licenseData.productId !== productId) {
         throw new HttpsError("permission-denied", "This license key is for a different product.");
     }
-    if (licenseData.status !== "active") { 
-        throw new HttpsError("permission-denied", `This license is inactive. Status: ${licenseData.status}`); 
-    }
+    if (licenseData.status !== "active") { throw new HttpsError("permission-denied", `This license is inactive. Status: ${licenseData.status}`); }
 
     if (licenseData.type === 'monthly') {
         const now = admin.firestore.Timestamp.now();
