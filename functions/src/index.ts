@@ -21,8 +21,8 @@ const ensureIsAdmin = (context: any) => {
   }
 };
 
-// --- [MODIFIED] INTERNAL HELPER FOR CREATING LICENSES ---
-const getAllLicenses = async (uid: string, productId: string, productName: string, source: string, planType: 'monthly' | 'lifetime', maxSessions: number = 2) => {
+// --- [CORRECT NAME] INTERNAL HELPER FOR CREATING LICENSES ---
+const createLicenseForUser = async (uid: string, productId: string, productName: string, source: string, planType: 'monthly' | 'lifetime', maxSessions: number = 2) => {
   const licenseKey = `KP-${productId.toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   
   const licensesRef = admin.firestore().collection('licenses');
@@ -111,7 +111,8 @@ export const nowPaymentsWebhook = onRequest(async (req, res) => {
                 res.status(400).send("Missing required metadata.");
                 return;
             }
-            await getAllLicenses(uid, productId, productName, 'nowpayments', planType as ('lifetime' | 'monthly'));
+            // --- [CORRECT NAME] ---
+            await createLicenseForUser(uid, productId, productName, 'nowpayments', planType as ('lifetime' | 'monthly'));
         }
         
         res.status(200).send("OK");
@@ -131,7 +132,8 @@ export const adminMintLicense = onCall({ cors: true }, async (request) => {
         throw new HttpsError("invalid-argument", "UID, Product ID, and Product Name are required.");
     }
     try {
-        await getAllLicenses(uid, productId, productName, 'admin', 'lifetime', maxSessions || 2);
+        // --- [CORRECT NAME] ---
+        await createLicenseForUser(uid, productId, productName, 'admin', 'lifetime', maxSessions || 2);
         return { success: true, message: `Lifetime license for ${productName} created for user ${uid}.` };
     } catch (error: any) {
         if (error instanceof HttpsError) throw error;
@@ -161,7 +163,6 @@ export const updateLicenseSettings = onCall({ cors: true }, async (request) => {
     }
 });
 
-// --- [NEW] ADMIN FUNCTION TO CHANGE A LICENSE STATUS (e.g., Revoke) ---
 export const admin_updateLicenseStatus = onCall({ cors: true }, async (request) => {
     ensureIsAdmin(request);
     const { licenseId, status } = request.data;
@@ -179,7 +180,7 @@ export const admin_updateLicenseStatus = onCall({ cors: true }, async (request) 
     }
 });
 
-// --- [NEW] ADMIN FUNCTION TO GET ALL LICENSES ---
+// --- [CORRECT NAME AND PLACEMENT] ---
 export const getAllLicenses = onCall({ cors: true }, async (request) => {
     ensureIsAdmin(request);
     try {
@@ -188,17 +189,12 @@ export const getAllLicenses = onCall({ cors: true }, async (request) => {
             id: doc.id,
             ...doc.data()
         }));
-        
-        // Optional: Enrich with user emails if needed, but can be slow for many licenses
-        // For now, we will do this on the client-side for simplicity
         return { licenses };
-
     } catch (error) {
         logger.error("Failed to fetch all licenses:", error);
         throw new HttpsError("internal", "An error occurred while fetching licenses.");
     }
 });
-
 
 export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) => {
     if (!request.auth) {
@@ -206,7 +202,6 @@ export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) =
     }
     const uid = request.auth.uid;
     const { productId } = request.data;
-
     if (!productId) {
         throw new HttpsError("invalid-argument", "A product ID is required.");
     }
@@ -227,20 +222,13 @@ export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) =
         const bucket = getStorage().bucket();
         const filePath = `products/${productId}.zip`; 
         const file = bucket.file(filePath);
-
         const [exists] = await file.exists();
         if(!exists) {
             logger.error(`File not found for product ${productId} at path ${filePath}`);
             throw new HttpsError("not-found", "The product file for this product has not been uploaded yet.");
         }
-
-        const [signedUrl] = await file.getSignedUrl({
-            action: 'read',
-            expires: Date.now() + 5 * 60 * 1000,
-        });
-        
+        const [signedUrl] = await file.getSignedUrl({ action: 'read', expires: Date.now() + 5 * 60 * 1000 });
         return { downloadUrl: signedUrl };
-
     } catch (error: any) {
         logger.error(`Failed to generate download URL for product ${productId}:`, error);
         if (error instanceof HttpsError) throw error;
@@ -248,9 +236,7 @@ export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) =
     }
 });
 
-// --- [MODIFIED] VERIFY LICENSE - NOW CHECKS PRODUCT ID ---
 export const verifyLicense = onCall({ cors: true }, async (request) => {
-    // Now expects 'productId' from the EA
     const { licenseKey, productId } = request.data;
     if (!licenseKey || !productId) { 
         throw new HttpsError("invalid-argument", "A license key and product ID are required."); 
@@ -264,12 +250,9 @@ export const verifyLicense = onCall({ cors: true }, async (request) => {
 
     const licenseData = snapshot.docs[0].data();
 
-    // --- [NEW SECURITY CHECK] ---
-    // Check if the license is for the correct product.
     if (licenseData.productId !== productId) {
         throw new HttpsError("permission-denied", "This license key is for a different product.");
     }
-
     if (licenseData.status !== "active") { 
         throw new HttpsError("permission-denied", `This license is inactive. Status: ${licenseData.status}`); 
     }
@@ -281,10 +264,8 @@ export const verifyLicense = onCall({ cors: true }, async (request) => {
             throw new HttpsError("permission-denied", "Your monthly subscription has expired.");
         }
     }
-
     return { success: true, message: "License is valid." };
 });
-
 
 export const registerEASession = onCall({ cors: true }, async (request) => {
   const { licenseKey, sessionId } = request.data;
@@ -292,7 +273,6 @@ export const registerEASession = onCall({ cors: true }, async (request) => {
 
   const licensesRef = admin.firestore().collection("licenses");
   const snapshot = await licensesRef.where("licenseKey", "==", licenseKey).limit(1).get();
-
   if (snapshot.empty) { throw new HttpsError("not-found", "License key not found."); }
   
   const licenseDoc = snapshot.docs[0];
@@ -309,7 +289,6 @@ export const registerEASession = onCall({ cors: true }, async (request) => {
           throw new HttpsError("resource-exhausted", `Session limit of ${maxSessions} reached.`);
       }
   }
-
   await sessionsRef.doc(sessionId).set({ lastSeen: admin.firestore.FieldValue.serverTimestamp(), productId: licenseData.productId });
   return { success: true, message: "Session registered." };
 });
@@ -324,6 +303,22 @@ export const addAdminRole = onCall({ cors: true }, async (request) => {
     return { message: `Success! ${email} has been made an admin.` };
   } catch (error) { throw new HttpsError("internal", "Failed to set admin role."); }
 });
+
+export const removeAdminRole = onCall({ cors: true }, async (request) => {
+  ensureIsAdmin(request);
+  const email = request.data.email;
+  if (!email || typeof email !== 'string') { 
+    throw new HttpsError("invalid-argument", "A valid email is required."); 
+  }
+  try {
+    const user = await admin.auth().getUserByEmail(email);
+    await admin.auth().setCustomUserClaims(user.uid, null);
+    return { message: `Success! ${email} is no longer an admin.` };
+  } catch (error) { 
+    logger.error(`Failed to remove admin role for ${email}`, error);
+    throw new HttpsError("internal", "Failed to remove admin role."); 
+  }
+}); 
 
 export const getAllUsers = onCall({ cors: true }, async (request) => {
   ensureIsAdmin(request);
@@ -384,24 +379,4 @@ export const deleteUserSession = onCall({ cors: true }, async (request) => {
   }
   await admin.firestore().collection('users').doc(uid).collection('sessions').doc(sessionId).delete();
   return { message: "Session deleted." };
-});
-
-// Add this function to your functions/src/index.ts file
-
-export const removeAdminRole = onCall({ cors: true }, async (request) => {
-  ensureIsAdmin(request); // Ensure only an admin can perform this action
-  const email = request.data.email;
-  if (!email || typeof email !== 'string') { 
-    throw new HttpsError("invalid-argument", "A valid email is required."); 
-  }
-
-  try {
-    const user = await admin.auth().getUserByEmail(email);
-    // Set the custom claims back to null to remove all special roles
-    await admin.auth().setCustomUserClaims(user.uid, null);
-    return { message: `Success! ${email} is no longer an admin.` };
-  } catch (error) { 
-    logger.error(`Failed to remove admin role for ${email}`, error);
-    throw new HttpsError("internal", "Failed to remove admin role."); 
-  }
 });
