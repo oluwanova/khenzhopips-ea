@@ -1,7 +1,9 @@
+// src/pages/AdminDashboard.tsx
+
 import { useState, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { functions, storage } from "@/lib/firebaseClient";
+import { functions, storage, auth } from "@/lib/firebaseClient";
 import { httpsCallable } from "firebase/functions";
 import { ref, uploadBytesResumable } from "firebase/storage";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +22,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { MoreHorizontal, Pencil } from "lucide-react";
+import { MoreHorizontal, Pencil, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 
+// Interfaces remain unchanged
 interface AppUser {
   uid: string;
   email: string | undefined;
@@ -29,7 +33,6 @@ interface AppUser {
   isAdmin: boolean;
   isDisabled: boolean;
 }
-
 interface License {
     id: string;
     userId: string;
@@ -41,23 +44,21 @@ interface License {
 
 const AdminDashboard = () => {
   const { toast } = useToast();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<AppUser[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
-  
   const [adminEmail, setAdminEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [mintUid, setMintUid] = useState("");
   const [mintProductId, setMintProductId] = useState("");
   const [isMinting, setIsMinting] = useState(false);
   const [mintMaxSessions, setMintMaxSessions] = useState("2");
-  
   const [uploading, setUploading] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-
   const [editingLicenseId, setEditingLicenseId] = useState<string | null>(null);
   const [newMaxSessions, setNewMaxSessions] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const availableProducts = [
       { id: "scout", name: "Scout EA v1.0" },
@@ -75,36 +76,39 @@ const AdminDashboard = () => {
     }, {} as Record<string, string>);
   }, [users]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const getAllUsersFn = httpsCallable(functions, 'getAllUsers');
-const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
-      const [userResult, licenseResult] = await Promise.all([
-        getAllUsersFn(),
-        getAllLicensesFn(),
-      ]);
-
-      const userData = userResult.data as { users?: AppUser[] };
-      if (userData && Array.isArray(userData.users)) {
-        setUsers(userData.users);
-      }
-
-      const licenseData = licenseResult.data as { licenses?: License[] };
-      if (licenseData && Array.isArray(licenseData.licenses)) {
-        setLicenses(licenseData.licenses);
-      }
-
-    } catch (err: any) {
-      toast({ title: "Error Fetching Data", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const getAllUsersFn = httpsCallable(functions, 'getAllUsers');
+        
+        // --- [THE FINAL, CRITICAL FIX IS HERE] ---
+        // The function name is 'getAllLicenses', not 'admin_getAllLicenses'
+        const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses'); 
+
+        const [userResult, licenseResult] = await Promise.all([
+          getAllUsersFn(),
+          getAllLicensesFn(),
+        ]);
+        const userData = userResult.data as { users?: AppUser[] };
+        if (userData && Array.isArray(userData.users)) {
+          setUsers(userData.users);
+        }
+        const licenseData = licenseResult.data as { licenses?: License[] };
+        if (licenseData && Array.isArray(licenseData.licenses)) {
+          setLicenses(licenseData.licenses);
+        }
+      } catch (err: any) {
+        toast({ title: "Error Fetching Data", description: err.message, variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (isAdmin) {
+      fetchData();
+    }
+  }, [isAdmin, toast]);
 
   const handleMakeAdmin = async (email: string) => {
     setIsSubmitting(true);
@@ -113,7 +117,8 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
       await addAdminRoleFn({ email });
       toast({ title: "Success", description: `${email} is now an admin.` });
       setAdminEmail("");
-      fetchData();
+      const result = await httpsCallable(functions, 'getAllUsers')();
+      setUsers((result.data as { users?: AppUser[] })?.users || []);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -127,7 +132,14 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
             const removeAdminRoleFn = httpsCallable(functions, 'removeAdminRole');
             await removeAdminRoleFn({ email });
             toast({ title: "Success", description: `${email} is no longer an admin.` });
-            fetchData();
+            if (auth.currentUser?.email === email) {
+                window.location.reload();
+            } else {
+                if(isAdmin) {
+                    const result = await httpsCallable(functions, 'getAllUsers')();
+                    setUsers((result.data as { users?: AppUser[] })?.users || []);
+                }
+            }
         } catch (err: any) {
             toast({ title: "Error", description: err.message, variant: "destructive" });
         }
@@ -139,7 +151,8 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
       const setUserDisabledStatusFn = httpsCallable(functions, 'setUserDisabledStatus');
       await setUserDisabledStatusFn({ uid, disabled: !currentStatus });
       toast({ title: "Success", description: `User status updated.` });
-      fetchData();
+      const result = await httpsCallable(functions, 'getAllUsers')();
+      setUsers((result.data as { users?: AppUser[] })?.users || []);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -151,7 +164,8 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
         const deleteUserFn = httpsCallable(functions, 'deleteUser');
         await deleteUserFn({ uid });
         toast({ title: "Success", description: "User has been deleted." });
-        fetchData();
+        const result = await httpsCallable(functions, 'getAllUsers')();
+        setUsers((result.data as { users?: AppUser[] })?.users || []);
       } catch (err: any) {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       }
@@ -173,7 +187,8 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
       });
       toast({ title: "Success!", description: `License created!`});
       setMintUid(""); setMintProductId(""); setMintMaxSessions("2");
-      fetchData();
+      const result = await httpsCallable(functions, 'getAllLicenses')();
+      setLicenses((result.data as { licenses?: License[] })?.licenses || []);
     } catch (err: any) {
       toast({ title: "Minting Failed", description: err.message, variant: "destructive" });
     }
@@ -181,6 +196,10 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
   };
 
   const handleFileUpload = (productId: string, file: File) => {
+    if (!isAdmin) {
+        toast({ title: "Permission Denied", description: "You must be an admin to upload files.", variant: "destructive"});
+        return;
+    }
     if (!file) return;
     if (!file.name.endsWith('.zip')) {
         toast({ title: "Invalid File Type", description: "Please upload a .zip file.", variant: "destructive"});
@@ -211,12 +230,31 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
     );
   };
   
+  const handleDeleteFile = async (productId: string, productName: string) => {
+    if (!window.confirm(`Are you sure you want to delete the file for ${productName}? This cannot be undone.`)) {
+      return;
+    }
+    
+    setDeletingId(productId);
+    try {
+      const deleteProductFileFn = httpsCallable(functions, 'deleteProductFile');
+      await deleteProductFileFn({ productId });
+      toast({ title: "Success", description: `File for ${productName} has been deleted.` });
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      toast({ title: "Delete Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleUpdateLicenseStatus = async (licenseId: string, newStatus: 'active' | 'revoked') => {
     try {
         const updateStatusFn = httpsCallable(functions, 'admin_updateLicenseStatus');
         await updateStatusFn({ licenseId, status: newStatus });
         toast({ title: "Success", description: `License has been ${newStatus}.`});
-        fetchData();
+        const result = await httpsCallable(functions, 'getAllLicenses')();
+        setLicenses((result.data as { licenses?: License[] })?.licenses || []);
     } catch (err: any) {
         toast({ title: "Update Failed", description: err.message, variant: "destructive"});
     }
@@ -231,17 +269,41 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
         toast({ title: "Success", description: "Max sessions updated."});
         setEditingLicenseId(null);
         setNewMaxSessions("");
-        fetchData();
+        const result = await httpsCallable(functions, 'getAllLicenses')();
+        setLicenses((result.data as { licenses?: License[] })?.licenses || []);
     } catch (err: any) {
         toast({ title: "Update Failed", description: err.message, variant: "destructive"});
     }
   };
 
+  if (authLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><p>Verifying permissions...</p></div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto p-4 flex flex-col items-center justify-center text-center">
+          <ShieldAlert className="w-16 h-16 text-destructive mb-4" />
+          <h1 className="text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground max-w-md">
+            You do not have the required permissions to view this page. Please contact the site owner if you believe this is an error.
+          </p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto p-4 pt-24 space-y-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <Badge variant="default" className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" />Admin Permissions Active</Badge>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           <Card>
@@ -278,35 +340,50 @@ const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
         <Card>
             <CardHeader>
                 <CardTitle>Product File Management</CardTitle>
-                <CardDescription>Upload the .zip file for each product. This file should contain the EA and its README document.</CardDescription>
+                <CardDescription>Upload or delete the .zip file for each product.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
-                    <TableHeader><TableRow><TableHead>Product</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow><TableHead>Product</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                     <TableBody>
                         {availableProducts.map((product) => (
                             <TableRow key={product.id}>
                                 <TableCell className="font-semibold">{product.name}</TableCell>
                                 <TableCell className="text-right">
-                                    {uploading === product.id ? (
-                                        <div className="flex items-center justify-end gap-4 w-48 ml-auto">
-                                            <Progress value={uploadProgress} className="h-2" />
-                                            <span className="text-sm">{Math.round(uploadProgress)}%</span>
-                                        </div>
-                                    ) : (
-                                        <Button asChild variant="outline">
-                                            <label htmlFor={`file-upload-${product.id}`}>
-                                                Upload .zip
-                                                <input id={`file-upload-${product.id}`} type="file" className="hidden" accept=".zip"
-                                                    onChange={(e) => {
-                                                        if (e.target.files && e.target.files[0]) {
-                                                            handleFileUpload(product.id, e.target.files[0]);
-                                                        }
-                                                        e.target.value = '';
-                                                    }} />
-                                            </label>
+                                    <div className="flex items-center justify-end gap-2">
+                                        {uploading === product.id ? (
+                                            <div className="flex items-center justify-end gap-4 w-48">
+                                                <Progress value={uploadProgress} className="h-2" />
+                                                <span className="text-sm">{Math.round(uploadProgress)}%</span>
+                                            </div>
+                                        ) : (
+                                            <Button asChild variant="outline" disabled={deletingId === product.id}>
+                                                <label htmlFor={`file-upload-${product.id}`}>
+                                                    Upload .zip
+                                                    <input id={`file-upload-${product.id}`} type="file" className="hidden" accept=".zip"
+                                                        onChange={(e) => {
+                                                            if (e.target.files && e.target.files[0]) {
+                                                                handleFileUpload(product.id, e.target.files[0]);
+                                                            }
+                                                            e.target.value = '';
+                                                        }} />
+                                                </label>
+                                            </Button>
+                                        )}
+
+                                        <Button 
+                                            variant="destructive" 
+                                            size="icon" 
+                                            onClick={() => handleDeleteFile(product.id, product.name)}
+                                            disabled={uploading === product.id || deletingId === product.id}
+                                        >
+                                            {deletingId === product.id ? (
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                            ) : (
+                                                <Trash2 className="h-4 w-4" />
+                                            )}
                                         </Button>
-                                    )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
