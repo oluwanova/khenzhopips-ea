@@ -219,7 +219,7 @@ export const getDownloadUrlForProduct = onCall({ cors: true }, async (request) =
     }
 
     try {
-        const bucket = getStorage().bucket();
+        const bucket = getStorage().bucket("khenzhopipsea-v2.appspot.com");
         const filePath = `products/${productId}.zip`; 
         const file = bucket.file(filePath);
         const [exists] = await file.exists();
