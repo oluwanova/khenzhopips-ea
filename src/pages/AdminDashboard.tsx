@@ -79,8 +79,7 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       const getAllUsersFn = httpsCallable(functions, 'getAllUsers');
-const getAllLicensesFn = httpsCallable(functions, 'admin_getAllLicenses');
-
+const getAllLicensesFn = httpsCallable(functions, 'getAllLicenses');
       const [userResult, licenseResult] = await Promise.all([
         getAllUsersFn(),
         getAllLicensesFn(),
