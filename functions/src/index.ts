@@ -22,7 +22,7 @@ const ensureIsAdmin = (context: any) => {
 };
 
 // --- [MODIFIED] INTERNAL HELPER FOR CREATING LICENSES ---
-const admin_getAllLicenses = async (uid: string, productId: string, productName: string, source: string, planType: 'monthly' | 'lifetime', maxSessions: number = 2) => {
+const getAllLicenses = async (uid: string, productId: string, productName: string, source: string, planType: 'monthly' | 'lifetime', maxSessions: number = 2) => {
   const licenseKey = `KP-${productId.toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   
   const licensesRef = admin.firestore().collection('licenses');
@@ -111,7 +111,7 @@ export const nowPaymentsWebhook = onRequest(async (req, res) => {
                 res.status(400).send("Missing required metadata.");
                 return;
             }
-            await admin_getAllLicenses(uid, productId, productName, 'nowpayments', planType as ('lifetime' | 'monthly'));
+            await getAllLicenses(uid, productId, productName, 'nowpayments', planType as ('lifetime' | 'monthly'));
         }
         
         res.status(200).send("OK");
@@ -131,7 +131,7 @@ export const adminMintLicense = onCall({ cors: true }, async (request) => {
         throw new HttpsError("invalid-argument", "UID, Product ID, and Product Name are required.");
     }
     try {
-        await admin_getAllLicenses(uid, productId, productName, 'admin', 'lifetime', maxSessions || 2);
+        await getAllLicenses(uid, productId, productName, 'admin', 'lifetime', maxSessions || 2);
         return { success: true, message: `Lifetime license for ${productName} created for user ${uid}.` };
     } catch (error: any) {
         if (error instanceof HttpsError) throw error;
